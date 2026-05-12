@@ -131,6 +131,6 @@ Cada partida toma 15 preguntas aleatorias del pool correspondiente.
 
 ---
 
-## Desarrollado por
+## Desarrollado por 
 
-Harold Orellana — Proyecto academico UFG
+Hardcode275
