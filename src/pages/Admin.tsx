@@ -264,7 +264,7 @@ const ChartCard = ({ title, subtitle, children, delay = 0 }: {
     className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-100 dark:border-slate-700 shadow-sm"
   >
     <p className="font-display font-bold text-slate-800 dark:text-slate-100 mb-1">{title}</p>
-    {subtitle && <p className="text-xs text-slate-400 dark:text-slate-500 mb-4">{subtitle}</p>}
+    {subtitle && <p className="text-xs text-slate-500 dark:text-slate-300 mb-4">{subtitle}</p>}
     {children}
   </motion.div>
 );
@@ -327,7 +327,7 @@ const OverviewTab = ({ sessions }: { sessions: Session[] }) => {
       <div className="bg-slate-900 text-white text-xs px-3 py-2 rounded-xl shadow-xl">
         <p className="font-bold mb-1">{label}</p>
         {payload.map((p: any, i: number) => (
-          <p key={i} style={{ color: p.color }}>{p.name}: <strong>{p.value}</strong></p>
+          <p key={i} style={{ color: '#ffffff' }}>{p.name}: <strong>{p.value}</strong></p>
         ))}
       </div>
     );
@@ -424,7 +424,7 @@ const OverviewTab = ({ sessions }: { sessions: Session[] }) => {
                 >
                   {pieData.map((entry, i) => <Cell key={i} fill={entry.fill} />)}
                 </Pie>
-                <Legend wrapperStyle={{ fontSize: 11, color: tickColor }} />
+                <Legend wrapperStyle={{ fontSize: 11 }} formatter={(value) => <span style={{ color: isDark ? '#ffffff' : '#6b7280' }}>{value}</span>} />
                 <Tooltip content={<CustomTooltip />} />
               </PieChart>
             </ResponsiveContainer>
@@ -707,7 +707,7 @@ const CategoriesTab = ({ sessions }: { sessions: Session[] }) => {
       <div className="bg-slate-900 text-white text-xs px-3 py-2 rounded-xl shadow-xl">
         <p className="font-bold mb-1">{label}</p>
         {payload.map((p: any, i: number) => (
-          <p key={i} style={{ color: p.color }}>{p.name}: <strong>{p.value}</strong></p>
+          <p key={i} style={{ color: '#ffffff' }}>{p.name}: <strong>{p.value}</strong></p>
         ))}
       </div>
     );
