@@ -1,0 +1,59 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "Public user profile and stats",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "username": { "type": "string" },
+        "avatar": { "type": "string" },
+        "totalPoints": { "type": "number" },
+        "gamesPlayed": { "type": "number" },
+        "lastActive": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "username"]
+    },
+    "GameRoom": {
+      "title": "Game Room",
+      "description": "Active trivia session",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "status": { "type": "string", "enum": ["waiting", "playing", "finished"] },
+        "currentQuestionIndex": { "type": "number" },
+        "players": { "type": "array", "items": { "type": "string" } },
+        "scores": { "type": "object" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "startedAt": { "type": "string", "format": "date-time" },
+        "questionIds": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "Question": {
+      "title": "Trivia Question",
+      "description": "AI generated question",
+      "type": "object",
+      "properties": {
+        "text": { "type": "string" },
+        "options": { "type": "array", "items": { "type": "string" } },
+        "correctIndex": { "type": "number" },
+        "category": { "type": "string" },
+        "difficulty": { "type": "string" }
+      }
+    }
+  },
+  "firestore": {
+    "users": {
+      "schema": "User",
+      "description": "Collection of global user profiles"
+    },
+    "rooms": {
+      "schema": "GameRoom",
+      "description": "Active game sessions"
+    },
+    "rooms/{roomId}/questions": {
+      "schema": "Question",
+      "description": "Questions specific to a game room"
+    }
+  }
+}
