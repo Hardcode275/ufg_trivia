@@ -20,6 +20,7 @@ Plataforma de trivia interactiva desarrollada para estudiantes de la Universidad
 - Redirección automática al lobby si el usuario ya tiene sesión activa al visitar `/login`.
 - Creación automática de perfil en Firestore en el primer inicio de sesión.
 - Avatar generado con DiceBear API si el usuario no tiene foto de Google.
+- El perfil se sincroniza en tiempo real con Firestore (`onSnapshot`), por lo que cambios como permisos de analíticas se aplican al instante sin necesidad de cerrar sesión.
 
 ### Leaderboard
 - Clasificación global en tiempo real con los 10 mejores puntajes.
@@ -29,8 +30,14 @@ Plataforma de trivia interactiva desarrollada para estudiantes de la Universidad
 - Puntos totales acumulados, partidas jugadas y rango global.
 - Sistema de insignias (Pionero, Intelecto, Veloz, Campeón, Veterano).
 
+### Control de acceso a analíticas
+- El administrador puede conceder o revocar acceso al panel de analíticas a cualquier usuario registrado desde el tab **Accesos** del panel Admin.
+- Los usuarios con acceso ven el botón **Analytics** en el navbar del Lobby y pueden entrar al panel completo.
+- Los viewers no pueden gestionar permisos de otros usuarios ni ver el tab Accesos.
+- El campo `canViewAnalytics` se actualiza en Firestore y el acceso se activa en tiempo real sin recargar la página.
+
 ### Panel de administrador
-Accesible solo para el correo administrador. Incluye 5 secciones:
+Accesible para el administrador y usuarios con permiso de analíticas concedido. Incluye 6 secciones:
 
 | Pestaña | Contenido |
 |---|---|
@@ -39,6 +46,7 @@ Accesible solo para el correo administrador. Incluye 5 secciones:
 | **Sesiones** | Todas las partidas con filtro por categoría |
 | **Categorías** | Comparación de métricas entre Mixta y Programación (gráfica de barras y radar) |
 | **Reportes** | Perfil de comportamiento por jugador: etiqueta, tendencias, métricas de racha, distribución de sesiones y observaciones en lenguaje natural |
+| **Accesos** | Gestión de permisos: conceder o revocar acceso al panel a usuarios registrados (solo visible para el administrador) |
 
 ---
 
@@ -191,7 +199,7 @@ El nivel de confianza del perfil escala con el número de sesiones: 1 sesión = 
 
 | Colección | Descripción |
 |---|---|
-| `users/{uid}` | Perfil del jugador: username, avatar, totalPoints, gamesPlayed, lastActive |
+| `users/{uid}` | Perfil del jugador: username, avatar, totalPoints, gamesPlayed, lastActive, canViewAnalytics |
 | `leaderboard/{uid}` | Mejor puntaje histórico por jugador |
 | `sessions/{id}` | Registro de cada partida: score, accuracy, avgTimeUsed, timerReductions, maxStreak, timeRecoveries, category, playedAt |
 
@@ -200,6 +208,8 @@ El nivel de confianza del perfil escala con el número de sesiones: 1 sesión = 
 ## Cómo ejecutar en local
 
 **Requisitos:** Node.js 18+, cuenta de Firebase con Firestore y Authentication habilitados, dominio `localhost` autorizado en Firebase Console → Authentication → Authorized domains.
+
+> Las reglas de Firestore (`firestore.rules`) permiten al administrador actualizar el campo `canViewAnalytics` en documentos de otros usuarios. Para desplegar cambios en las reglas: `firebase deploy --only firestore:rules`.
 
 ```bash
 # Instalar dependencias
