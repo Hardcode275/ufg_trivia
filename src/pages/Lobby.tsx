@@ -35,7 +35,7 @@ export const Lobby = () => {
           </div>
           <div>
             <h1 className="text-lg font-display font-extrabold leading-none">Trivia UFG</h1>
-            <p className="text-blue-300/60 text-xs font-medium">Elite Edition</p>
+            <p className="text-blue-300/60 text-xs font-medium">Prueba Tus Conocomientos</p>
           </div>
         </div>
 
@@ -109,7 +109,7 @@ export const Lobby = () => {
             />
             <h3 className="font-display font-bold text-lg mb-2 relative z-10">¿Cómo funciona?</h3>
             <ul className="space-y-2 relative z-10">
-              {['10 segundos por pregunta', 'Responde rápido = más puntos', 'Si tardas, el tiempo baja'].map((tip, i) => (
+              {['10 segundos por pregunta', 'Responde rápido = más puntos', 'Si tardas, el tiempo baja', 'Al acertar 2 preguntas sube un segundo.'].map((tip, i) => (
                 <li key={i} className="flex items-start gap-2 text-blue-200/80 text-sm">
                   <span className="text-ufg-gold font-bold mt-0.5">{i + 1}.</span>{tip}
                 </li>
@@ -147,7 +147,7 @@ export const Lobby = () => {
                 </p>
                 <div className="mt-4 flex items-center gap-2 text-ufg-blue/60 text-xs font-bold uppercase tracking-wider">
                   <Zap className="w-3.5 h-3.5" />
-                  110+ preguntas
+                  300 preguntas(banco completo)
                 </div>
               </motion.button>
 
@@ -171,7 +171,7 @@ export const Lobby = () => {
                 </p>
                 <div className="mt-4 flex items-center gap-2 text-blue-300/70 text-xs font-bold uppercase tracking-wider">
                   <Code2 className="w-3.5 h-3.5" />
-                  70+ preguntas
+                  188 preguntas
                 </div>
               </motion.button>
             </div>

@@ -1,5 +1,5 @@
 {
-  "name": "UFG Trivia Elite",
+  "name": "UFG Trivia",
   "description": "Una plataforma de trivia multijugador en tiempo real diseñada para la comunidad de la UFG. Incluye generación de preguntas por IA, tablas de clasificación en vivo y una experiencia móvil fluida.",
   "requestFramePermissions": [
     "camera",
