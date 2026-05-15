@@ -28,8 +28,17 @@ service cloud.firestore {
 
       allow read: if isSignedIn();
       allow create: if isOwner(userId) && isValidUser(request.resource.data);
-      allow update: if isOwner(userId) && isValidUser(request.resource.data)
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['username', 'avatar', 'totalPoints', 'gamesPlayed', 'lastActive']);
+      allow update: if (
+        // El dueño puede actualizar sus propios campos de perfil
+        (isOwner(userId) && isValidUser(request.resource.data)
+          && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['username', 'avatar', 'totalPoints', 'gamesPlayed', 'lastActive']))
+        ||
+        // El administrador puede conceder/revocar acceso a analíticas
+        (isSignedIn() && request.auth.token.email == 'haroldorellana20@gmail.com'
+          && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['canViewAnalytics']))
+      );
     }
 
     // Game rooms

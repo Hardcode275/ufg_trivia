@@ -10,11 +10,12 @@ import {
   LayoutDashboard, Users, ListOrdered, Tag, ChevronLeft,
   TrendingUp, Zap, Target, Clock, Award, GraduationCap,
   ArrowUpRight, ArrowDownRight, Brain, Flame, Shield, DatabaseZap, CheckCircle2,
-  AlertTriangle, Star, FileText, Menu, X,
+  AlertTriangle, Star, FileText, Menu, X, ShieldCheck, UserCheck, UserX,
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { db, collection, query, orderBy, onSnapshot, getDocs, addDoc } from '../lib/firebase';
+import { db, collection, query, orderBy, onSnapshot, getDocs, addDoc, doc, updateDoc } from '../lib/firebase';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { cn } from '../lib/utils';
 import { generarReporteFinal, type ReporteFinal } from '../lib/analytics';
@@ -291,6 +292,7 @@ const AvatarImg = ({ src, username, size = 'sm' }: { src: string; username: stri
     src={src || `https://api.dicebear.com/9.x/avataaars/png?seed=${username}`}
     onError={e => { (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${username}&background=003366&color=FFD700`; }}
     className={cn('rounded-xl object-cover flex-shrink-0', size === 'sm' ? 'w-8 h-8' : 'w-10 h-10')}
+    referrerPolicy="no-referrer"
     alt={username}
   />
 );
@@ -1072,6 +1074,160 @@ const ReporteTab = ({ sessions }: { sessions: Session[] }) => {
   );
 };
 
+// ── ACCESS TAB ────────────────────────────────────────────────────────────────
+const AccessTab = () => {
+  const { user } = useAuth();
+  const [allUsers, setAllUsers]   = useState<any[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(true);
+  const [updating, setUpdating]   = useState<string | null>(null);
+  const [search, setSearch]       = useState('');
+
+  useEffect(() => {
+    getDocs(collection(db, 'users')).then(snap => {
+      setAllUsers(snap.docs.map(d => ({ ...d.data() })));
+      setLoadingUsers(false);
+    });
+  }, []);
+
+  const toggleAccess = async (uid: string, current: boolean) => {
+    setUpdating(uid);
+    try {
+      await updateDoc(doc(db, 'users', uid), { canViewAnalytics: !current });
+      setAllUsers(prev => prev.map(u => u.uid === uid ? { ...u, canViewAnalytics: !current } : u));
+      toast.success(!current ? 'Acceso concedido' : 'Acceso revocado');
+    } catch {
+      toast.error('Error al actualizar permisos');
+    } finally {
+      setUpdating(null);
+    }
+  };
+
+  const filtered = allUsers.filter(u =>
+    u.username?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  if (loadingUsers) return (
+    <div className="flex justify-center py-16">
+      <div className="w-8 h-8 border-2 border-ufg-blue border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+
+  return (
+    <div className="space-y-6">
+      {/* Info card */}
+      <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-100 dark:border-slate-700">
+        <div className="flex items-center gap-3 mb-2">
+          <ShieldCheck className="w-5 h-5 text-ufg-blue dark:text-ufg-gold" />
+          <h3 className="font-display font-black text-slate-800 dark:text-white">Control de acceso</h3>
+        </div>
+        <p className="text-slate-400 text-sm">
+          Otorga o revoca acceso al panel de analíticas a usuarios registrados. Los usuarios con acceso podrán ver todos los reportes y estadísticas, pero no podrán gestionar permisos.
+        </p>
+      </div>
+
+      {/* Search */}
+      <input
+        value={search}
+        onChange={e => setSearch(e.target.value)}
+        placeholder="Buscar usuario..."
+        className="w-full sm:w-80 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-ufg-blue"
+      />
+
+      {/* Table */}
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 overflow-hidden">
+        {filtered.length === 0 ? (
+          <div className="text-center py-12 text-slate-400 text-sm">No se encontraron usuarios.</div>
+        ) : (
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-100 dark:border-slate-700">
+                <th className="text-left px-6 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Usuario</th>
+                <th className="text-left px-6 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider hidden sm:table-cell">Partidas</th>
+                <th className="text-left px-6 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Acceso</th>
+                <th className="px-6 py-3" />
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+              {filtered.map(u => {
+                const isSelf        = u.uid === user?.uid;
+                const isSuperAdmin  = ADMIN_EMAILS.includes(user?.email || '') && isSelf;
+                const hasAccess     = isSuperAdmin || u.canViewAnalytics === true;
+                const isUpdating    = updating === u.uid;
+
+                return (
+                  <tr key={u.uid} className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                    {/* Avatar + nombre */}
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={u.avatar}
+                          referrerPolicy="no-referrer"
+                          alt=""
+                          className="w-9 h-9 rounded-full object-cover flex-shrink-0"
+                          onError={e => {
+                            (e.target as HTMLImageElement).src =
+                              `https://ui-avatars.com/api/?name=${u.username}&background=003366&color=FFD700`;
+                          }}
+                        />
+                        <div>
+                          <p className="font-bold text-slate-800 dark:text-slate-100 text-sm">{u.username}</p>
+                          {isSelf && (
+                            <p className="text-[10px] text-ufg-gold font-bold uppercase tracking-wider">Tú</p>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* Partidas */}
+                    <td className="px-6 py-4 hidden sm:table-cell">
+                      <span className="text-sm text-slate-500 dark:text-slate-400">{u.gamesPlayed ?? 0}</span>
+                    </td>
+
+                    {/* Badge */}
+                    <td className="px-6 py-4">
+                      {isSuperAdmin ? (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-ufg-gold/10 text-ufg-gold">
+                          <ShieldCheck className="w-3 h-3" /> Administrador
+                        </span>
+                      ) : hasAccess ? (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400">
+                          <UserCheck className="w-3 h-3" /> Con acceso
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400">
+                          <UserX className="w-3 h-3" /> Sin acceso
+                        </span>
+                      )}
+                    </td>
+
+                    {/* Acción */}
+                    <td className="px-6 py-4 text-right">
+                      {!isSuperAdmin && (
+                        <button
+                          onClick={() => toggleAccess(u.uid, u.canViewAnalytics === true)}
+                          disabled={isUpdating}
+                          className={cn(
+                            'px-4 py-1.5 rounded-xl text-xs font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed',
+                            hasAccess
+                              ? 'bg-red-50 dark:bg-red-900/20 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/40'
+                              : 'bg-ufg-blue text-white hover:bg-ufg-blue/90',
+                          )}
+                        >
+                          {isUpdating ? '…' : hasAccess ? 'Revocar' : 'Conceder'}
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
+  );
+};
+
 // ── SIDEBAR ───────────────────────────────────────────────────────────────────
 const NAV = [
   { id: 'overview',    label: 'Overview',    icon: LayoutDashboard },
@@ -1079,29 +1235,31 @@ const NAV = [
   { id: 'sessions',   label: 'Sesiones',    icon: ListOrdered     },
   { id: 'categories', label: 'Categorías',  icon: Tag             },
   { id: 'reports',    label: 'Reportes',    icon: FileText        },
+  { id: 'access',     label: 'Accesos',     icon: ShieldCheck     },
 ];
 
 // ── MAIN COMPONENT ────────────────────────────────────────────────────────────
 export const Admin = () => {
-  const { user }    = useAuth();
-  const navigate    = useNavigate();
+  const { user, profile } = useAuth();
+  const navigate          = useNavigate();
   const [sessions,  setSessions]  = useState<Session[]>([]);
   const [loading,   setLoading]   = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
 
-  const isAdmin = ADMIN_EMAILS.includes(user?.email || '');
+  const isSuperAdmin = ADMIN_EMAILS.includes(user?.email || '');
+  const isViewer     = isSuperAdmin || profile?.canViewAnalytics === true;
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
-    if (!isAdmin) return;
+    if (!isViewer) return;
     const q = query(collection(db, 'sessions'), orderBy('playedAt', 'desc'));
     return onSnapshot(q, snap => {
       setSessions(snap.docs.map(d => ({ id: d.id, ...d.data() } as Session)));
       setLoading(false);
     });
-  }, [isAdmin]);
+  }, [isViewer]);
 
-  if (!isAdmin) return (
+  if (!isViewer) return (
     <div className="min-h-screen bg-slate-100 dark:bg-slate-900 flex items-center justify-center">
       <div className="text-center">
         <Shield className="w-16 h-16 text-red-400 mx-auto mb-4" />
@@ -1148,7 +1306,7 @@ export const Admin = () => {
 
         {/* Nav */}
         <nav className="flex-1 p-4 space-y-1">
-          {NAV.map(({ id, label, icon: Icon }) => (
+          {NAV.filter(n => n.id !== 'access' || isSuperAdmin).map(({ id, label, icon: Icon }) => (
             <button key={id} onClick={() => { setActiveTab(id); setSidebarOpen(false); }}
               className={cn(
                 'w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all text-left',
@@ -1220,6 +1378,7 @@ export const Admin = () => {
                 {activeTab === 'sessions'    && <SessionsTab    sessions={sessions} />}
                 {activeTab === 'categories'  && <CategoriesTab  sessions={sessions} />}
                 {activeTab === 'reports'     && <ReporteTab     sessions={sessions} />}
+                {activeTab === 'access'      && isSuperAdmin    && <AccessTab />}
               </motion.div>
             )}
           </AnimatePresence>

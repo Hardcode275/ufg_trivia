@@ -13,7 +13,7 @@ export const Lobby = () => {
   const { user, profile } = useAuth();
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const navigate = useNavigate();
-  const isAdmin = user?.email === 'haroldorellana20@gmail.com';
+  const isAdmin = user?.email === 'haroldorellana20@gmail.com' || profile?.canViewAnalytics === true;
 
   useEffect(() => {
     const q = query(collection(db, 'leaderboard'), orderBy('score', 'desc'), limit(10));
@@ -46,7 +46,7 @@ export const Lobby = () => {
             <img
               src={profile?.avatar || `https://api.dicebear.com/9.x/avataaars/png?seed=${user?.uid}`}
               onError={e => { (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${profile?.username || 'U'}&background=003366&color=FFD700`; }}
-              className="w-7 h-7 rounded-lg" alt="avatar"
+              className="w-7 h-7 rounded-lg" referrerPolicy="no-referrer" alt="avatar"
             />
             <span className="font-bold text-sm hidden sm:block">{profile?.username}</span>
           </button>
@@ -85,6 +85,7 @@ export const Lobby = () => {
                   src={profile?.avatar || `https://api.dicebear.com/9.x/avataaars/png?seed=${user?.uid}`}
                   onError={e => { (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${profile?.username || 'U'}&background=003366&color=FFD700`; }}
                   className="w-20 h-20 rounded-2xl border-4 border-white shadow-lg cursor-pointer"
+                  referrerPolicy="no-referrer"
                   onClick={() => navigate('/profile')} alt="avatar"
                 />
                 <div className="absolute -bottom-2 -right-2 bg-ufg-gold w-6 h-6 rounded-lg flex items-center justify-center border-2 border-white">
@@ -227,7 +228,7 @@ export const Lobby = () => {
                         <img
                           src={entry.avatar || `https://api.dicebear.com/9.x/avataaars/png?seed=${entry.uid}`}
                           onError={e => { (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${entry.username}&background=003366&color=FFD700`; }}
-                          className="w-9 h-9 rounded-xl flex-shrink-0" alt={entry.username}
+                          className="w-9 h-9 rounded-xl flex-shrink-0" referrerPolicy="no-referrer" alt={entry.username}
                         />
                         <p className="font-bold text-slate-800 dark:text-slate-100 truncate text-sm">
                           {entry.username}

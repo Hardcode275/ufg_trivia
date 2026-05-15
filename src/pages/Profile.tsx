@@ -74,6 +74,7 @@ export const Profile = () => {
                   src={profile?.avatar || ''}
                   onError={(e) => { (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${profile?.username || 'U'}&background=003366&color=FFD700&size=128`; }}
                   className="w-24 h-24 rounded-2xl bg-white p-1 border-4 border-white shadow-2xl"
+                  referrerPolicy="no-referrer"
                   alt="Avatar"
                 />
                 <div className="absolute -bottom-2 -right-2 bg-ufg-gold p-1.5 rounded-xl border-4 border-white shadow-md">
